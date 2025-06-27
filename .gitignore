@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+.env
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+log/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# PostgreSQL dump
+*.sql
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+READMEprivate.md
