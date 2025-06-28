@@ -4,7 +4,8 @@ var router = express.Router();
 /* GET users listing. */
 // http://localhost:3000/users
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+  // res.send('hello world');
+  res.json({ message: 'Hello, world!' });
 });
 
 module.exports = router;
