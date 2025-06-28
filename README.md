@@ -33,7 +33,10 @@ For more information, visit the official Express Generator documentation:
    ```
    npm start
    ```
-
+5. **It runs in the following:**
+```
+http://localhost:3000/
+```
 # Install pg
 https://node-postgres.com
 node-postgres is a collection of node.js modules for interfacing with your PostgreSQL database.
