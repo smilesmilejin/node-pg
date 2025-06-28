@@ -17,7 +17,7 @@ const { validateModel } = require('../utils/route-utilities');
 
 router.get('/:id', async (req, res) => {
   try {
-    const user = await validateModel('user', req.params.id);
+    const user = await validateModel('users', req.params.id);
     res.json(user);
   } catch (err) {
     res.status(err.status || 500).json({ message: err.message });
