@@ -1,0 +1,58 @@
+// const { pool } = require('../config/db'); // your db connection
+
+
+// const validateModel = async (modelName, modelId) => {
+//   console.log('a');
+
+//   const id = Number(modelId)
+
+//   if (!Number.isInteger(id) {
+//     // Create the error response object
+//     const invalidResponse = { message: `${modelName} id (${modelId}) is invalid.` };
+//     // Send the 400 Bad Request response and stop further processing
+//     return res.status(400).json(invalidResponse);
+//   }
+
+//     if (Number.isInteger(id)) {
+//         console.log('modelId is an integer');
+//     };
+
+//     const result = await pool.query(`SELECT * FROM ${modelName}s WHERE id = $1`, [id]);
+//     if (result.rows.length === 0) {
+//         // Create the error response object
+//         const notFoundResponse = { message: `${modelName} id (${modelId}) not found.` };
+//         // Send the 400 Bad Request response and stop further processing
+//         return res.status(404).json(notFoundResponse);
+    
+//     }
+
+//     return result.rows[0]
+
+// };
+
+// module.exports = { validateModel };
+
+
+const { pool } = require('../config/db');
+
+const validateModel = async (modelName, modelId) => {
+  const id = Number(modelId);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    const error = new Error(`${modelName} id (${modelId}) is invalid.`);
+    error.status = 400;
+    throw error;
+  }
+
+  const result = await pool.query(`SELECT * FROM ${modelName}s WHERE id = $1`, [id]);
+
+  if (result.rows.length === 0) {
+    const error = new Error(`${modelName} id (${modelId}) not found.`);
+    error.status = 404;
+    throw error;
+  }
+
+  return result.rows[0];
+};
+
+module.exports = { validateModel };

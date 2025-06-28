@@ -384,3 +384,27 @@ Inserted user: { id: 1, name: 'Alice', createdAt: 2025-06-28T03:11:30.003Z }
 User inserted: { id: 1, name: 'Alice', createdAt: 2025-06-28T03:11:30.003Z }
 MacBook-Pro-7:node-pg xinshuangjin$ 
 ```
+
+# Implemented GET users/user_id route
+
+Here is the endpoint and response
+```
+http://localhost:3000/users/1
+success response:
+{
+    "id": 1,
+    "name": "Alice",
+    "createdAt": "2025-06-28T03:11:30.003Z"
+}
+
+http://localhost:3000/users/2
+{
+    "message": "user id (2) not found."
+}
+
+http://localhost:3000/users/abc
+
+{
+    "message": "user id (abc) is invalid."
+}
+```
