@@ -229,3 +229,158 @@ SELECT * FROM posts;
 ```
 
 
+# Remove the following from ```package.json``` otherwise cannot use npm start to run
+```
+"type": "module"
+``` 
+
+If you're not using "type": "module" in your package.json, Node.js treats your files as CommonJS modules. 
+That means you must use require and module.exports, not import/export.
+
+So this line in db.js ❌ will not work in CommonJS.:
+```
+export { pool, client };
+```
+
+Solution:
+
+stick with CommonJS style (using require, module.exports) and have your app run smoothly with npm start.
+
+**1. Make sure your package.json does NOT have "type": "module"**
+
+**2. Use CommonJS syntax everywhere**
+
+In your db.js (or db.mjs, but better rename to .js), write:
+// db.js
+```js
+const pg = require('pg');
+const { Pool, Client } = pg;
+
+const connectionString = 'postgres://postgres:postgres@localhost:5432/node_pg';
+
+const pool = new Pool({ connectionString });
+const client = new Client({ connectionString });
+
+module.exports = { pool, client };
+```
+
+
+**3. In your test-db.js or other files, use:**
+
+In CommonJS files (which you have because you are using require() and no "type": "module"), you cannot use await outside an async function.
+
+```js
+const { pool, client } = require('./db');
+
+async function test() {
+  try {
+    const res = await pool.query('SELECT NOW()');
+    console.log('✅ Pool connected:', res.rows[0].now);
+  } catch (err) {
+    console.error('❌ Pool error:', err.message);
+  } finally {
+    await pool.end();
+  }
+
+  try {
+    await client.connect();
+    const res = await client.query('SELECT NOW()');
+    console.log('✅ Client connected:', res.rows[0].now);
+  } catch (err) {
+    console.error('❌ Client error:', err.message);
+  } finally {
+    await client.end();
+  }
+}
+
+test().catch(console.error);
+```
+
+## Try Insert pg query in example-query.js
+
+```js
+const { pool } = require('./db');
+async function insertUser(name) {
+  try {
+    const text = 'INSERT INTO users(name) VALUES($1) RETURNING *'; // $1 and $2 are placeholders for parameters — helps avoid SQL injection.
+    const values = [name]; // values is an array holding the actual values that replace $1 and $2 in the query (the function inputs).
+
+    const res = await pool.query(text, values);
+    console.log('res----:', res);
+
+    console.log('Inserted user:', res.rows[0]); // The result (res) contains information about the query, including inserted rows.
+    
+    return res.rows[0];
+  } catch (err) {
+    console.error('Insert query error:', err);
+    throw err;
+  }
+}
+
+insertUser('Alice')
+  .then(user => console.log('User inserted:', user))
+  .catch(console.error);
+```
+
+console log result:
+```
+####### getUsers
+####### insertUsers
+[]
+res----: Result {
+  command: 'INSERT',
+  rowCount: 1,
+  oid: 0,
+  rows: [ { id: 1, name: 'Alice', createdAt: 2025-06-28T03:11:30.003Z } ],
+  fields: [
+    Field {
+      name: 'id',
+      tableID: 361681,
+      columnID: 1,
+      dataTypeID: 23,
+      dataTypeSize: 4,
+      dataTypeModifier: -1,
+      format: 'text'
+    },
+    Field {
+      name: 'name',
+      tableID: 361681,
+      columnID: 2,
+      dataTypeID: 1043,
+      dataTypeSize: -1,
+      dataTypeModifier: 1004,
+      format: 'text'
+    },
+    Field {
+      name: 'createdAt',
+      tableID: 361681,
+      columnID: 3,
+      dataTypeID: 1114,
+      dataTypeSize: 8,
+      dataTypeModifier: -1,
+      format: 'text'
+    }
+  ],
+  _parsers: [
+    [Function: parseInteger],
+    [Function: noParse],
+    [Function: parseDate]
+  ],
+  _types: TypeOverrides {
+    _types: {
+      getTypeParser: [Function: getTypeParser],
+      setTypeParser: [Function: setTypeParser],
+      arrayParser: [Object],
+      builtins: [Object]
+    },
+    text: {},
+    binary: {}
+  },
+  RowCtor: null,
+  rowAsArray: false,
+  _prebuiltEmptyResultObject: { id: null, name: null, createdAt: null }
+}
+Inserted user: { id: 1, name: 'Alice', createdAt: 2025-06-28T03:11:30.003Z }
+User inserted: { id: 1, name: 'Alice', createdAt: 2025-06-28T03:11:30.003Z }
+MacBook-Pro-7:node-pg xinshuangjin$ 
+```
